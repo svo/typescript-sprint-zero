@@ -1,0 +1,5 @@
+# Temporary directory
+tmp
+
+# Development environment
+.vagrant
