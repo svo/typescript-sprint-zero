@@ -5,10 +5,10 @@
   roles:
     - git
     - python
+    - node
     - ansible
     - docker
     - packer
-    - tox
     - shellcheck
     - ansible-lint
 

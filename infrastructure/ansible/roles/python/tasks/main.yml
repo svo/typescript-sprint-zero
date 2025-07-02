@@ -17,7 +17,7 @@
   ansible.builtin.blockinfile:
     create: true
     path: ~/.profile
-    marker: "# {mark} PYTHON ANSIBLE MANAGED BLOCK"
-    mode: "0755"
+    marker: '# {mark} PYTHON ANSIBLE MANAGED BLOCK'
+    mode: '0755'
     block: |
       export PATH=$PATH:$HOME/.local/bin

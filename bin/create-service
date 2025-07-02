@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-tox -e build &&
-pushd dist &&
-whl=$(find . -name "*.whl" -exec ls -t1 {} + | head -1) &&
-popd &&
-version=$(python -m setuptools_scm | sed 's/+/./g') &&
+npm run build &&
+version=$(node -p "require('./package.json').version") &&
 
-cp build/openapi.json build/"$version".json &&
+mkdir -p /tmp/build &&
+tar -czf "/tmp/build/typescript-sprint-zero-${version}.tar.gz" -C dist . &&
+mv "/tmp/build/typescript-sprint-zero-${version}.tar.gz" "dist/" &&
 
-packer build -color=false -var "whl=${whl}" -var "version=${version}" infrastructure/packer/service.pkr.hcl &&
+node scripts/generate-openapi.js &&
+
+packer build -color=false -var "artifact=typescript-sprint-zero-${version}.tar.gz" -var "version=${version}" infrastructure/packer/service.pkr.hcl &&
 
 echo "VERSION=$version"

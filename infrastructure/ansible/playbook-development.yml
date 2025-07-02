@@ -21,8 +21,8 @@
 
     - name: Set default locale
       ansible.builtin.lineinfile:
-        dest: "/etc/default/locale"
-        line: "LANG=en_US.UTF-8"
+        dest: '/etc/default/locale'
+        line: 'LANG=en_US.UTF-8'
       become: true
 
     - name: Reconfigure locales
@@ -46,11 +46,11 @@
       ansible.builtin.blockinfile:
         create: true
         path: ~/.profile
-        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        marker: '# {mark} ANSIBLE MANAGED BLOCK'
         mode: '0755'
         block: |
           stty sane
-          export PYTHONDONTWRITEBYTECODE=1
+          export NODE_ENV=development
 
   roles:
     - git
@@ -59,7 +59,6 @@
     - ansible
     - docker
     - packer
-    - tox
     - claude-code
     - shellcheck
     - ansible-lint

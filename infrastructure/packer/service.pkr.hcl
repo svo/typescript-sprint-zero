@@ -1,11 +1,11 @@
 source "docker" "typescript-sprint-zero-service" {
-  changes     = ["EXPOSE 8000", "CMD [\"/run.sh\"]"]
+  changes     = ["EXPOSE 3000", "CMD [\"/run.sh\"]"]
   commit      = "true"
   image       = "debian:12-slim"
   run_command = ["-d", "-i", "-t", "--name", "packer-service", "{{.Image}}", "/bin/bash"]
 }
 
-variable "whl" {
+variable "artifact" {
   type = string
 }
 
@@ -33,14 +33,41 @@ build {
     user            = "root"
   }
 
+  provisioner "shell" {
+    inline = [
+      "mkdir -p /app",
+      "chown runner:runner /app"
+    ]
+  }
+
   provisioner "file" {
-    source = "dist/${var.whl}"
-    destination = "/${var.whl}"
+    source = "dist/${var.artifact}"
+    destination = "/tmp/${var.artifact}"
+  }
+
+  provisioner "file" {
+    source = "package.json"
+    destination = "/tmp/package.json"
+  }
+
+  provisioner "file" {
+    source = "package-lock.json"
+    destination = "/tmp/package-lock.json"
   }
 
   provisioner "file" {
     source = "run.sh"
     destination = "/run.sh"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "cd /tmp",
+      "tar -xzf ${var.artifact} -C /app",
+      "cp package.json package-lock.json /app/",
+      "chmod +x /run.sh",
+      "chown -R runner:runner /app"
+    ]
   }
 
   post-processor "docker-tag" {

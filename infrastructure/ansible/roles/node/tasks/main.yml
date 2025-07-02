@@ -4,3 +4,12 @@
       - nodejs
       - npm
   become: true
+
+- name: Install global npm packages
+  community.general.npm:
+    name: '{{ item }}'
+    global: true
+  loop:
+    - typescript
+    - ts-node
+  become: true

@@ -32,7 +32,7 @@
   ansible.builtin.blockinfile:
     create: true
     path: ~/.profile
-    marker: "# {mark} DOCKER ANSIBLE MANAGED BLOCK"
-    mode: "0755"
+    marker: '# {mark} DOCKER ANSIBLE MANAGED BLOCK'
+    mode: '0755'
     block: |
       export DOCKER_DEFAULT_PLATFORM=linux/amd64
