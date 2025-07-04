@@ -1,21 +1,73 @@
 # TypeScript Sprint Zero
 
 [![CI](https://github.com/svo/typescript-sprint-zero/actions/workflows/ci.yml/badge.svg)](https://github.com/svo/typescript-sprint-zero/actions/workflows/ci.yml)
-[![Release](https://github.com/svo/typescript-sprint-zero/actions/workflows/release.yml/badge.svg)](https://github.com/svo/typescript-sprint-zero/actions/workflows/release.yml)
+[![Service](https://github.com/svo/typescript-sprint-zero/actions/workflows/service.yml/badge.svg)](https://github.com/svo/typescript-sprint-zero/actions/workflows/service.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/svo/typescript-sprint-zero)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2+-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+
+> Minimal, opinionated scaffolding for TypeScript backend services following hexagonal architecture and domain-driven design principles with 100% test coverage and comprehensive CI/CD.
+
+## Features
+
+- **Hexagonal Architecture** with clear separation of concerns
+- **Domain-Driven Design** principles and patterns
+- **100% Test Coverage** with comprehensive test suite
+- **OpenAPI Documentation** auto-generated from code
+- **Security by Design** with authentication middleware
+- **CI/CD Pipeline** with Docker builds and multi-platform support
+- **Developer Experience** with hot reload, linting, and formatting
+- **Framework Agnostic** HTTP abstraction layer
+- **Architecture Validation** with dependency boundary enforcement
+
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Development](#development)
+- [Architecture](#architecture)
+- [Scripts and Commands](#scripts-and-commands)
+- [API Documentation](#api-documentation)
+- [Deployment](#deployment)
+
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/svo/typescript-sprint-zero.git
+cd typescript-sprint-zero
+
+# Install dependencies
+npm install
+
+# Run the complete test suite
+npm run test:all
+
+# Start development server
+npm run dev
+```
 
 ## Development
 
 ### Prerequisites
 
-- `node`: >= 18.0.0
-- `npm`: >= 9.0.0
+- **Node.js**: >= 18.0.0
+- **npm**: >= 9.0.0
+- **Docker**: For containerized builds (optional)
 
 ### Getting Started
 
 ```bash
+# Install dependencies
 npm install
+
+# Build the application
 npm run build
-npm run test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Start production server
 npm start
 ```
 
@@ -207,7 +259,7 @@ This project uses **tsyringe** as the dependency injection framework to enhance 
 
 #### Testing
 
-- High test coverage is expected (80%+ as configured in Jest)
+- 100% test coverage is required (enforced by Jest configuration)
 - Tests should be meaningful and not just aim to increase coverage
 - Mocks/stubs should be used where necessary to isolate behavior
 - Tests should include only one assertion per test case
@@ -215,6 +267,7 @@ This project uses **tsyringe** as the dependency injection framework to enhance 
   - **Example:** `should return 404 when user is not found`
 - Integration tests are required for API endpoints
 - Unit tests should isolate components and mock dependencies
+- JUnit XML reports are generated for CI/CD integration
 
 #### Static Analysis
 
@@ -266,6 +319,15 @@ npm run test:watch
 
 # Run tests with coverage report
 npm run test:coverage
+
+# Run architecture tests
+npm run test:architecture
+
+# Run complete test suite (all quality checks)
+npm run test:all
+
+# Run CI pipeline locally
+npm run ci
 ```
 
 #### Code Quality
@@ -285,6 +347,16 @@ npm run format
 
 # Type checking
 npm run typecheck
+
+# Validate architecture dependencies
+npm run arch:validate
+```
+
+#### Security
+
+```bash
+# Run security audit
+npm run security:audit
 ```
 
 #### Utilities
@@ -334,6 +406,14 @@ The application provides health check endpoints for monitoring:
 
 ### API Documentation
 
+#### OpenAPI Specification
+
+The API is fully documented using OpenAPI 3.0 specifications:
+
+- OpenAPI spec is automatically generated from JSDoc comments in the code
+- Swagger documentation includes request/response schemas and examples
+- Specification file is generated during build process as `build/{version}.json`
+
 #### Authentication
 
 All user-related endpoints require Basic Authentication:
@@ -373,14 +453,3 @@ Authorization: Basic <credentials>
 GET /api/users/{id}
 Authorization: Basic <credentials>
 ```
-
----
-
-By following these conventions and architecture principles, the code remains:
-
-- **Clean and easy to reason about**
-- **Secure by default**
-- **Readable by both humans and tools**
-- **Easy to refactor and scale with confidence**
-- **Loosely coupled through dependency injection**
-- **Highly testable with comprehensive coverage**
