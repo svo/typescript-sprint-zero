@@ -1,6 +1,5 @@
 # TypeScript Sprint Zero
 
-[![CI](https://github.com/svo/typescript-sprint-zero/actions/workflows/ci.yml/badge.svg)](https://github.com/svo/typescript-sprint-zero/actions/workflows/ci.yml)
 [![Service](https://github.com/svo/typescript-sprint-zero/actions/workflows/service.yml/badge.svg)](https://github.com/svo/typescript-sprint-zero/actions/workflows/service.yml)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/svo/typescript-sprint-zero)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2+-blue.svg)](https://www.typescriptlang.org/)
