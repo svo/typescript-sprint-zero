@@ -11,43 +11,55 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
+const sendUnauthorizedError = (res: Response, message: string): void => {
+  res.status(401).json(createErrorResponseDto('UnauthorizedError', message));
+};
+
+const parseBasicAuthCredentials = (authHeader: string): AuthenticationCredentials | null => {
+  const base64Credentials = authHeader.slice('Basic '.length);
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [username, password] = credentials.split(':');
+  return username && password ? { username, password } : null;
+};
+
+type AuthResult =
+  | { success: true; credentials: AuthenticationCredentials }
+  | { success: false; message: string };
+
+const validateAndAuthenticate = async (
+  authHeader: string | undefined,
+  authenticator: Authenticator
+): Promise<AuthResult> => {
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return { success: false, message: 'Basic authentication required' };
+  }
+
+  const credentials = parseBasicAuthCredentials(authHeader);
+  if (!credentials) {
+    return { success: false, message: 'Invalid authentication credentials' };
+  }
+
+  const isAuthenticated = await authenticator.authenticate(credentials);
+  if (!isAuthenticated) {
+    return { success: false, message: 'Invalid username or password' };
+  }
+
+  return { success: true, credentials };
+};
+
 export const createAuthMiddleware = (authenticator: Authenticator) => {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
-      res
-        .status(401)
-        .json(createErrorResponseDto('UnauthorizedError', 'Basic authentication required'));
-      return;
-    }
-
     try {
-      const base64Credentials = authHeader.slice('Basic '.length);
-      const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-      const [username, password] = credentials.split(':');
+      const result = await validateAndAuthenticate(req.headers.authorization, authenticator);
 
-      if (!username || !password) {
-        res
-          .status(401)
-          .json(createErrorResponseDto('UnauthorizedError', 'Invalid authentication credentials'));
-        return;
+      if (result.success) {
+        req.user = { username: result.credentials.username };
+        next();
+      } else {
+        sendUnauthorizedError(res, result.message);
       }
-
-      const authCredentials: AuthenticationCredentials = { username, password };
-      const isAuthenticated = await authenticator.authenticate(authCredentials);
-
-      if (!isAuthenticated) {
-        res
-          .status(401)
-          .json(createErrorResponseDto('UnauthorizedError', 'Invalid username or password'));
-        return;
-      }
-
-      req.user = { username };
-      next();
     } catch (error) {
-      res.status(401).json(createErrorResponseDto('UnauthorizedError', 'Authentication failed'));
+      sendUnauthorizedError(res, 'Authentication failed');
     }
   };
 };

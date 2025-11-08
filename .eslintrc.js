@@ -15,6 +15,20 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
+    complexity: ['error', 5],
+    'max-depth': ['error', 3],
+    'max-nested-callbacks': ['error', 2],
+    'max-lines-per-function': [
+      'error',
+      {
+        max: 50,
+        skipBlankLines: true,
+        skipComments: true,
+        IIFEs: false,
+      },
+    ],
+    'max-statements': ['error', 10],
+    'max-params': ['error', 3],
     'boundaries/element-types': [
       'error',
       {
@@ -43,4 +57,23 @@ module.exports = {
     es6: true,
   },
   ignorePatterns: ['dist/', 'coverage/', 'tmp/', '*.js', '*.d.ts'],
+  overrides: [
+    {
+      files: ['**/*.test.ts', '**/*.spec.ts'],
+      rules: {
+        complexity: ['error', 10],
+        'max-nested-callbacks': ['error', 4],
+        'max-lines-per-function': [
+          'error',
+          {
+            max: 300,
+            skipBlankLines: true,
+            skipComments: true,
+            IIFEs: false,
+          },
+        ],
+        'max-statements': ['error', 20],
+      },
+    },
+  ],
 };

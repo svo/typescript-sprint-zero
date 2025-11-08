@@ -136,6 +136,27 @@ describe('UserController', () => {
         })
       );
     });
+
+    it('should handle non-Error exceptions', async () => {
+      const requestBody = {
+        email: 'test@example.com',
+        name: 'Test User',
+      };
+
+      mockCreateUserUseCase.execute.mockRejectedValue('String error');
+
+      mockRequest.body = requestBody;
+
+      await userController.createUser(mockRequest as Request, mockResponse as Response);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: 'InternalServerError',
+          message: 'An unexpected error occurred',
+        })
+      );
+    });
   });
 
   describe('getUser', () => {
@@ -208,6 +229,22 @@ describe('UserController', () => {
         expect.objectContaining({
           error: 'ValidationError',
           message: 'User ID cannot be empty',
+        })
+      );
+    });
+
+    it('should handle non-Error exceptions', async () => {
+      mockGetUserUseCase.execute.mockRejectedValue('String error');
+
+      mockRequest.params = { id: 'test-id' };
+
+      await userController.getUser(mockRequest as Request, mockResponse as Response);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: 'InternalServerError',
+          message: 'An unexpected error occurred',
         })
       );
     });

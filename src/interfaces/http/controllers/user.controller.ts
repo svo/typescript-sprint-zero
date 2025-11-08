@@ -14,69 +14,85 @@ export class UserController {
     private readonly getUserUseCase: GetUserUseCase
   ) {}
 
-  createUser = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const requestDto: CreateUserRequestDto = req.body;
+  private validateCreateUserRequest(requestDto: CreateUserRequestDto, res: Response): boolean {
+    if (!requestDto.email || !requestDto.name) {
+      res
+        .status(400)
+        .json(createErrorResponseDto('ValidationError', 'Email and name are required'));
+      return false;
+    }
+    return true;
+  }
 
-      if (!requestDto.email || !requestDto.name) {
-        res
-          .status(400)
-          .json(createErrorResponseDto('ValidationError', 'Email and name are required'));
-        return;
-      }
-
-      const result = await this.createUserUseCase.execute(requestDto);
-      const responseDto = createUserResponseDto(result.userId.value);
-
-      res.status(201).header('Location', responseDto.location).json(responseDto);
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes('already exists')) {
-          res.status(409).json(createErrorResponseDto('ConflictError', error.message));
-          return;
-        }
-
-        if (error.message.includes('Invalid') || error.message.includes('cannot be empty')) {
-          res.status(400).json(createErrorResponseDto('ValidationError', error.message));
-          return;
-        }
-      }
-
+  private handleCreateUserError(error: unknown, res: Response): void {
+    if (!(error instanceof Error)) {
       res
         .status(500)
         .json(createErrorResponseDto('InternalServerError', 'An unexpected error occurred'));
+      return;
+    }
+
+    if (error.message.includes('already exists')) {
+      res.status(409).json(createErrorResponseDto('ConflictError', error.message));
+    } else if (error.message.includes('Invalid') || error.message.includes('cannot be empty')) {
+      res.status(400).json(createErrorResponseDto('ValidationError', error.message));
+    } else {
+      res
+        .status(500)
+        .json(createErrorResponseDto('InternalServerError', 'An unexpected error occurred'));
+    }
+  }
+
+  private validateGetUserRequest(userId: string | undefined, res: Response): userId is string {
+    if (!userId) {
+      res.status(400).json(createErrorResponseDto('ValidationError', 'User ID is required'));
+      return false;
+    }
+    return true;
+  }
+
+  private handleGetUserError(error: unknown, res: Response): void {
+    if (!(error instanceof Error)) {
+      res
+        .status(500)
+        .json(createErrorResponseDto('InternalServerError', 'An unexpected error occurred'));
+      return;
+    }
+
+    if (error.message.includes('not found')) {
+      res.status(404).json(createErrorResponseDto('NotFoundError', error.message));
+    } else if (error.message.includes('cannot be empty')) {
+      res.status(400).json(createErrorResponseDto('ValidationError', error.message));
+    } else {
+      res
+        .status(500)
+        .json(createErrorResponseDto('InternalServerError', 'An unexpected error occurred'));
+    }
+  }
+
+  createUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const requestDto: CreateUserRequestDto = req.body;
+      if (!this.validateCreateUserRequest(requestDto, res)) return;
+
+      const result = await this.createUserUseCase.execute(requestDto);
+      const responseDto = createUserResponseDto(result.userId.value);
+      res.status(201).header('Location', responseDto.location).json(responseDto);
+    } catch (error) {
+      this.handleCreateUserError(error, res);
     }
   };
 
   getUser = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.params['id'];
-
-      if (!userId) {
-        res.status(400).json(createErrorResponseDto('ValidationError', 'User ID is required'));
-        return;
-      }
+      if (!this.validateGetUserRequest(userId, res)) return;
 
       const result = await this.getUserUseCase.execute({ userId });
       const responseDto = getUserResponseDto(result.user);
-
       res.status(200).json(responseDto);
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes('not found')) {
-          res.status(404).json(createErrorResponseDto('NotFoundError', error.message));
-          return;
-        }
-
-        if (error.message.includes('cannot be empty')) {
-          res.status(400).json(createErrorResponseDto('ValidationError', error.message));
-          return;
-        }
-      }
-
-      res
-        .status(500)
-        .json(createErrorResponseDto('InternalServerError', 'An unexpected error occurred'));
+      this.handleGetUserError(error, res);
     }
   };
 }

@@ -268,16 +268,34 @@ This project uses **tsyringe** as the dependency injection framework to enhance 
 - Unit tests should isolate components and mock dependencies
 - JUnit XML reports are generated for CI/CD integration
 
+#### Complexity Requirements
+
+Strict cyclomatic complexity limits are enforced:
+
+- **Cyclomatic Complexity**: Maximum 5 per function
+- **Max Depth**: Maximum 3 levels of nesting
+- **Max Nested Callbacks**: Maximum 2 levels
+- **Max Statements**: Maximum 10 per function
+- **Max Parameters**: Maximum 3 per function
+- **Max Lines per Function**: Maximum 50 lines (excluding blank lines)
+
+These rules help maintain:
+
+- Code readability and maintainability
+- Easier testing and debugging
+- Lower cognitive load for developers
+- Better code modularity
+
 #### Static Analysis
 
 Code must pass the following tools before merging:
 
-| Tool         | Purpose                    |
-| ------------ | -------------------------- |
-| `ESLint`     | Linting and style checking |
-| `Prettier`   | Code formatting            |
-| `TypeScript` | Static type checking       |
-| `Jest`       | Test coverage and quality  |
+| Tool         | Purpose                                 |
+| ------------ | --------------------------------------- |
+| `ESLint`     | Linting, style checking, and complexity |
+| `Prettier`   | Code formatting                         |
+| `TypeScript` | Static type checking                    |
+| `Jest`       | Test coverage and quality               |
 
 #### API Design
 
@@ -321,6 +339,9 @@ npm run test:coverage
 
 # Run architecture tests
 npm run test:architecture
+
+# Run complexity checks (source code only)
+npm run test:complexity
 
 # Run complete test suite (all quality checks)
 npm run test:all

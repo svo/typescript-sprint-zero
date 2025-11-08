@@ -14,34 +14,51 @@ interface AuthenticationService {
   authenticate(credentials: { username: string; password: string }): Promise<boolean>;
 }
 
+const resolveUseCases = () => ({
+  createUserUseCase: container.resolve(CreateUserUseCase),
+  getUserUseCase: container.resolve(GetUserUseCase),
+  getHealthUseCase: container.resolve(HealthUseCase),
+  authenticator: container.resolve('BasicAuthenticator') as AuthenticationService,
+});
+
+const setupControllers = (useCases: ReturnType<typeof resolveUseCases>) => ({
+  userController: new AbstractUserController(useCases.createUserUseCase, useCases.getUserUseCase),
+  healthController: new AbstractHealthController(useCases.getHealthUseCase),
+  authMiddleware: createAuthMiddleware(useCases.authenticator),
+});
+
+type RouteConfig = {
+  server: ServerAdapter;
+  routes: ReturnType<typeof createUserRoutes> | ReturnType<typeof createHealthRoutes>;
+  prefix: string;
+  middleware?: ReturnType<typeof createAuthMiddleware>[];
+};
+
+const addApiRoutes = ({ server, routes, prefix, middleware }: RouteConfig) => {
+  routes.forEach(route => {
+    const routeConfig = {
+      ...route,
+      path: `${prefix}${route.path}`,
+    };
+    if (middleware) {
+      server.addRoute({ ...routeConfig, middleware });
+    } else {
+      server.addRoute(routeConfig);
+    }
+  });
+};
+
 export const createAbstractServer = (adapter?: ServerAdapter): ServerAdapter => {
   const server = adapter || new ExpressServerAdapter();
+  const useCases = resolveUseCases();
+  const { userController, healthController, authMiddleware } = setupControllers(useCases);
 
-  const createUserUseCase = container.resolve(CreateUserUseCase);
-  const getUserUseCase = container.resolve(GetUserUseCase);
-  const getHealthUseCase = container.resolve(HealthUseCase);
-  const authenticator = container.resolve('BasicAuthenticator') as AuthenticationService;
-
-  const userController = new AbstractUserController(createUserUseCase, getUserUseCase);
-  const healthController = new AbstractHealthController(getHealthUseCase);
-  const authMiddleware = createAuthMiddleware(authenticator);
-
-  const userRoutes = createUserRoutes(userController);
-  const healthRoutes = createHealthRoutes(healthController);
-
-  healthRoutes.forEach(route => {
-    server.addRoute({
-      ...route,
-      path: `/api${route.path}`,
-    });
-  });
-
-  userRoutes.forEach(route => {
-    server.addRoute({
-      ...route,
-      path: `/api${route.path}`,
-      middleware: [authMiddleware],
-    });
+  addApiRoutes({ server, routes: createHealthRoutes(healthController), prefix: '/api' });
+  addApiRoutes({
+    server,
+    routes: createUserRoutes(userController),
+    prefix: '/api',
+    middleware: [authMiddleware],
   });
 
   /**

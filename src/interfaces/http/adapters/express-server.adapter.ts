@@ -74,38 +74,29 @@ export class ExpressServerAdapter implements ServerAdapter {
     };
   }
 
-  addRoute(route: RouteDefinition): void {
-    const handler = (req: Request, res: Response, next: NextFunction) => {
+  private createRouteHandler(route: RouteDefinition) {
+    return (req: Request, res: Response, next: NextFunction) => {
       const adaptedReq = this.adaptRequest(req);
       const adaptedRes = this.adaptResponse(res);
       const result = route.handler(adaptedReq, adaptedRes);
+      if (result instanceof Promise) result.catch(next);
+    };
+  }
 
-      if (result instanceof Promise) {
-        result.catch(next);
-      }
+  addRoute(route: RouteDefinition): void {
+    const handler = this.createRouteHandler(route);
+    const middlewares = route.middleware?.map(mw => this.adaptMiddleware(mw)) || [];
+
+    const methodMap = {
+      GET: this.app.get.bind(this.app),
+      POST: this.app.post.bind(this.app),
+      PUT: this.app.put.bind(this.app),
+      DELETE: this.app.delete.bind(this.app),
+      PATCH: this.app.patch.bind(this.app),
     };
 
-    const middlewares = route.middleware
-      ? route.middleware.map(mw => this.adaptMiddleware(mw))
-      : [];
-
-    switch (route.method) {
-      case 'GET':
-        this.app.get(route.path, ...middlewares, handler);
-        break;
-      case 'POST':
-        this.app.post(route.path, ...middlewares, handler);
-        break;
-      case 'PUT':
-        this.app.put(route.path, ...middlewares, handler);
-        break;
-      case 'DELETE':
-        this.app.delete(route.path, ...middlewares, handler);
-        break;
-      case 'PATCH':
-        this.app.patch(route.path, ...middlewares, handler);
-        break;
-    }
+    const method = methodMap[route.method];
+    if (method) method(route.path, ...middlewares, handler);
   }
 
   addMiddleware(middleware: MiddlewareHandler): void {
