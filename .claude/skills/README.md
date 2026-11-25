@@ -144,7 +144,7 @@ Requires running verification commands and reading output before any success cla
 **Directory:** `sequential-thinking/`
 **Trigger phrases:** "think through", "break down", "analyze step by step", "reason about"
 
-Structured, reflective problem-solving with numbered thought steps, explicit revisions, branches, hypothesis–verification cycles. Integrates with the `mcp__sequential-thinking__sequentialthinking` tool when available.
+Works through complex problems in sequential steps with revision, branching, hypothesis generation, and verification, then reports a verified conclusion and the evidence behind it.
 
 ---
 
